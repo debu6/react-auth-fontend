@@ -1,7 +1,8 @@
 import React from "react";
-import axios from "axios";
 import { Box, Button, TextField, Typography, Container, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BASE_URL } from "../config";
 
 const Login = () => {
   const [username, setUsername] = React.useState("");
@@ -11,7 +12,7 @@ const Login = () => {
   const loginHandler = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://debu-backend.onrender.com/login", {
+      const res = await axios.post(`${BASE_URL}/login`, {
         username: username,
         password: password,
       });

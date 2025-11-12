@@ -1,7 +1,8 @@
 import React from "react";
-import axios from "axios";
 import { Box, Button, TextField, Typography, Container, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BASE_URL } from "../config";
 
 const SignUp = () => {
         const [username,setUsername]=React.useState("");
@@ -11,7 +12,7 @@ const SignUp = () => {
         const signupHandler=async(e)=>{
             e.preventDefault();
             try{
-                const res=await axios.post("https://debu-backend.onrender.com/signup",{
+                const res=await axios.post(`${BASE_URL}/signup`, {
                     username:username,
                     password:password
                 }); 
@@ -23,7 +24,7 @@ const SignUp = () => {
                     
                 }
             }catch(err){
-              alert(err.response.data.message);
+              alert(err.response?.data?.message || "Something went wrong");
                 console.log(err);
             }
         }
