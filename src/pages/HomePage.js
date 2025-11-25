@@ -9,7 +9,8 @@ import {
   Logout as LogoutIcon, 
   AccountBalance as AccountBalanceIcon,
   TrendingUp as TrendingUpIcon,
-  Receipt as ReceiptIcon
+  Receipt as ReceiptIcon,
+  Undo as UndoIcon
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -21,6 +22,7 @@ const HomePage = () => {
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [payments, setPayments] = useState([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
+  const [refundLoading, setRefundLoading] = useState({});
 
   // Load Razorpay checkout script dynamically
   useEffect(() => {
@@ -110,8 +112,34 @@ const HomePage = () => {
     }
   };
 
+  // Handle refund
+  const handleRefund = async (paymentId) => {
+    try {
+      setRefundLoading(prev => ({ ...prev, [paymentId]: true }));
+      
+      const response = await axios.post(`${BASE_URL}/refund`, {
+        payment_id: paymentId,
+        // No amount = full refund, backend will calculate
+        reason: "Customer request from dashboard"
+      });
+      
+      if (response.data.success) {
+        alert(`Refund initiated successfully! Refund ID: ${response.data.refund.id}`);
+        
+        // Refresh payments data
+        const paymentsResponse = await axios.get(`${BASE_URL}/payments`);
+        setPayments(paymentsResponse.data);
+      }
+    } catch (error) {
+      console.error("Refund error:", error);
+      alert(error.response?.data?.message || "Failed to process refund");
+    } finally {
+      setRefundLoading(prev => ({ ...prev, [paymentId]: false }));
+    }
+  };
+
   // Calculate total amount and transaction count
-  const totalAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const totalAmount = payments.reduce((sum, payment) => sum + (payment.net_amount || payment.amount), 0);
   const totalTransactions = payments.length;
 
   return (
@@ -278,9 +306,11 @@ const HomePage = () => {
                       <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Order ID</TableCell>
                       <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Payment ID</TableCell>
                       <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Amount</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Currency</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Refund Amount</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Net Amount</TableCell>
                       <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Status</TableCell>
                       <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Date</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Action</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -302,14 +332,30 @@ const HomePage = () => {
                         <TableCell sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
                           ₹{payment.amount}
                         </TableCell>
-                        <TableCell>{payment.currency}</TableCell>
+                        <TableCell sx={{ color: payment.refund_amount > 0 ? '#f57c00' : '#999' }}>
+                          ₹{payment.refund_amount || 0}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                          ₹{payment.net_amount || payment.amount}
+                        </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={payment.status?.toUpperCase()}
-                            color={payment.status === 'paid' ? 'success' : 'warning'}
-                            size="small"
-                            sx={{ fontWeight: 'bold' }}
-                          />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            <Chip 
+                              label={payment.status?.toUpperCase()}
+                              color={payment.status === 'paid' ? 'success' : 'warning'}
+                              size="small"
+                              sx={{ fontWeight: 'bold' }}
+                            />
+                            {payment.refund_status && (
+                              <Chip 
+                                label={`Refund: ${payment.refund_status.toUpperCase()}`}
+                                color={payment.refund_status === 'processed' ? 'success' : 
+                                       payment.refund_status === 'failed' ? 'error' : 'warning'}
+                                size="small"
+                                variant="outlined"
+                              />
+                            )}
+                          </Box>
                         </TableCell>
                         <TableCell sx={{ color: '#666' }}>
                           <Box>
@@ -320,6 +366,38 @@ const HomePage = () => {
                               {new Date(payment.createdAt).toLocaleTimeString('en-IN')}
                             </Typography>
                           </Box>
+                        </TableCell>
+                        <TableCell>
+                          {payment.refund_status === 'processed' ? (
+                            <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
+                              Refunded
+                            </Typography>
+                          ) : payment.refund_status === 'pending' ? (
+                            <Typography variant="caption" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                              Refund Pending
+                            </Typography>
+                          ) : (
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              startIcon={<UndoIcon />}
+                              onClick={() => handleRefund(payment.payment_id)}
+                              disabled={refundLoading[payment.payment_id]}
+                              sx={{
+                                fontSize: '0.75rem',
+                                py: 0.5,
+                                px: 1,
+                                borderColor: '#f57c00',
+                                color: '#f57c00',
+                                '&:hover': {
+                                  borderColor: '#e65100',
+                                  backgroundColor: 'rgba(245, 124, 0, 0.1)'
+                                }
+                              }}
+                            >
+                              {refundLoading[payment.payment_id] ? 'Processing...' : 'Refund'}
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
