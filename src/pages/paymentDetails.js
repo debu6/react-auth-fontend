@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, CircularProgress, Card, CardContent,
-    Container, Grid, Chip, AppBar, Toolbar, IconButton, Avatar
+    Container, Grid, Chip, AppBar, Toolbar, IconButton, Avatar, Button
 } from "@mui/material";
 import {
     Payment as PaymentIcon,
@@ -11,6 +11,7 @@ import {
     TrendingUp as TrendingUpIcon,
     Receipt as ReceiptIcon,
 } from "@mui/icons-material";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from "react-router-dom";
 
 import axios from "axios";
@@ -28,7 +29,7 @@ const PaymentDetails = () => {
                 setPayments(response.data);
             } catch (error) {
                 console.error("Error fetching payments:", error);
-                alert("Failed to fetch payments");
+            
             } finally {
                 setPaymentsLoading(false);
             }
@@ -72,8 +73,9 @@ const PaymentDetails = () => {
                 </Toolbar>
             </AppBar>
 
-            <Container maxWidth="lg" sx={{ mt: 4 }}>
-                <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Container maxWidth="xl" sx={{ mt: 4 }}>
+               <Box sx={{display:'flex',justifyContent:'space-between'}}>
+                 <Grid container spacing={3} sx={{ mb: 4 }}>
                     <Grid item xs={12} md={6}>
                         <Card sx={{
                             background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -119,8 +121,26 @@ const PaymentDetails = () => {
                             </CardContent>
                         </Card>
                     </Grid>
-                </Grid>
 
+
+
+
+                </Grid>
+                <Button  startIcon={<ArrowBackIcon />} variant="outlined" size="small" sx={{
+                    height: 'fit-content',
+                    border: '1px solid white',
+                    color: "White",
+                    "&:hover": {
+                        color: 'blue',
+                        backgroundColor: "#f0f0f0",
+                    },
+                }} onClick={() => {
+                    navigate("/");
+                }}>
+                      
+                    Back
+                </Button>
+               </Box>
                 <Card sx={{
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(10px)',
