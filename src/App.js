@@ -5,19 +5,15 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/login';
 import SignUp from './pages/signup';
 import HomePage from './pages/HomePage';
-
-
+import PaymentDetails from './pages/paymentDetails';
 
 function App() {
- 
-
-
-
   return (
     <div >
       <Router>
       <Routes>
         <Route path='/' element={<ProtectedRoute><HomePage /></ProtectedRoute>}/>
+        <Route path='/payments' element={<ProtectedRoute><PaymentDetails /></ProtectedRoute>}/>
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<SignUp />} />
       </Routes> 

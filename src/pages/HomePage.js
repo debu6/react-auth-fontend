@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Button, Box, Typography, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, CircularProgress, Card, CardContent, 
+import {
+  Button, Box, Typography, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, CircularProgress, Card, CardContent,
   Container, Grid, Chip, AppBar, Toolbar, IconButton, Avatar
 } from "@mui/material";
-import { 
-  Payment as PaymentIcon, 
-  Logout as LogoutIcon, 
+import {
+  CardMedia
+} from "@mui/material";
+import {
+  Logout as LogoutIcon,
   AccountBalance as AccountBalanceIcon,
-  TrendingUp as TrendingUpIcon,
-  Receipt as ReceiptIcon,
-  Undo as UndoIcon
+
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../config";
+
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -22,7 +23,45 @@ const HomePage = () => {
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [payments, setPayments] = useState([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
-  const [refundLoading, setRefundLoading] = useState({});
+  const [clickedItem, setClickedItem] = useState(null)
+
+const products = [
+  { id: 1, name: "Smartphone", price: 14999, image: "https://picsum.photos/id/180/400/400" },
+  { id: 2, name: "Running Shoes", price: 2999, image: "https://picsum.photos/id/21/400/400" },
+  { id: 3, name: "Smart Watch", price: 1999, image: "https://picsum.photos/id/1062/400/400" },
+  { id: 4, name: "Bluetooth Headphones", price: 1599, image: "https://picsum.photos/id/1080/400/400" },
+  { id: 5, name: "Laptop Backpack", price: 1299, image: "https://picsum.photos/id/1060/400/400" },
+  { id: 6, name: "Wireless Mouse", price: 499, image: "https://picsum.photos/id/1063/400/400" },
+  { id: 7, name: "Mechanical Keyboard", price: 2499, image: "https://picsum.photos/id/1/400/400" },
+  { id: 8, name: "Power Bank", price: 999, image: "https://picsum.photos/id/82/400/400" },
+  { id: 9, name: "USB Type-C Cable", price: 299, image: "https://picsum.photos/id/1069/400/400" },
+  { id: 10, name: "Tablet", price: 18999, image: "https://picsum.photos/id/180/400/400" },
+
+  { id: 11, name: "Casual Sneakers", price: 2799, image: "https://picsum.photos/id/21/400/400" },
+  { id: 12, name: "Men’s Wrist Watch", price: 2499, image: "https://picsum.photos/id/1062/400/400" },
+  { id: 13, name: "Sunglasses", price: 899, image: "https://picsum.photos/id/1084/400/400" },
+  { id: 14, name: "Formal Shirt", price: 1199, image: "https://picsum.photos/id/1005/400/400" },
+  { id: 15, name: "Jeans", price: 1799, image: "https://picsum.photos/id/1076/400/400" },
+  { id: 16, name: "Travel Trolley Bag", price: 4999, image: "https://picsum.photos/id/1044/400/400" },
+  { id: 17, name: "Office Chair", price: 6499, image: "https://picsum.photos/id/1027/400/400" },
+  { id: 18, name: "Study Table", price: 3999, image: "https://picsum.photos/id/1061/400/400" },
+  { id: 19, name: "LED Desk Lamp", price: 799, image: "https://picsum.photos/id/1080/400/400" },
+  { id: 20, name: "Water Bottle", price: 399, image: "https://picsum.photos/id/1084/400/400" },
+
+  { id: 21, name: "Mixer Grinder", price: 3499, image: "https://picsum.photos/id/1011/400/400" },
+  { id: 22, name: "Electric Kettle", price: 1299, image: "https://picsum.photos/id/1018/400/400" },
+  { id: 23, name: "Induction Cooktop", price: 2999, image: "https://picsum.photos/id/83/400/400" },
+  { id: 24, name: "Air Fryer", price: 5999, image: "https://picsum.photos/id/1044/400/400" },
+  { id: 25, name: "Coffee Mug", price: 249, image: "https://picsum.photos/id/1080/400/400" },
+  { id: 26, name: "Bedsheet Set", price: 1599, image: "https://picsum.photos/id/1060/400/400" },
+  { id: 27, name: "Wall Clock", price: 999, image: "https://picsum.photos/id/1011/400/400" },
+  { id: 28, name: "Room Heater", price: 2199, image: "https://picsum.photos/id/1016/400/400" },
+  { id: 29, name: "Yoga Mat", price: 699, image: "https://picsum.photos/id/1084/400/400" },
+  { id: 30, name: "Dumbbell Set", price: 2499, image: "https://picsum.photos/id/109/400/400" },
+];
+
+
+
 
   // Load Razorpay checkout script dynamically
   useEffect(() => {
@@ -55,7 +94,8 @@ const HomePage = () => {
     navigate("/login");
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (id, price) => {
+    setClickedItem(id)
     if (!razorpayLoaded) {
       alert("Razorpay SDK not loaded yet, please try again");
       return;
@@ -64,20 +104,20 @@ const HomePage = () => {
     try {
       setLoading(true);
 
-      // 1️⃣ Create order from backend
+
       const { data } = await axios.post(`${BASE_URL}/create-order`, {
-        amount: 500, // ₹5
+        amount: price * 100,
       });
 
       const options = {
-        key: "rzp_test_RSczNtmNcTxWr0", // Your Razorpay key
+        key: "rzp_test_RSczNtmNcTxWr0", 
         amount: data.amount,
         currency: "INR",
         name: "My App",
         description: "Test Transaction",
         order_id: data.id,
         handler: async function (response) {
-          // 3️⃣ Verify payment on backend
+     
           try {
             await axios.post(`${BASE_URL}/verify-payment`, {
               order_id: response.razorpay_order_id,
@@ -85,7 +125,7 @@ const HomePage = () => {
               signature: response.razorpay_signature,
             });
             alert("Payment Successful!");
-            // Refresh payments data after successful payment
+ 
             const paymentsResponse = await axios.get(`${BASE_URL}/payments`);
             setPayments(paymentsResponse.data);
           } catch (err) {
@@ -112,44 +152,15 @@ const HomePage = () => {
     }
   };
 
-  // Handle refund
-  const handleRefund = async (paymentId) => {
-    try {
-      setRefundLoading(prev => ({ ...prev, [paymentId]: true }));
-      
-      const response = await axios.post(`${BASE_URL}/refund`, {
-        payment_id: paymentId,
-        // No amount = full refund, backend will calculate
-        reason: "Customer request from dashboard"
-      });
-      
-      if (response.data.success) {
-        alert(`Refund initiated successfully! Refund ID: ${response.data.refund.id}`);
-        
-        // Refresh payments data
-        const paymentsResponse = await axios.get(`${BASE_URL}/payments`);
-        setPayments(paymentsResponse.data);
-      }
-    } catch (error) {
-      console.error("Refund error:", error);
-      alert(error.response?.data?.message || "Failed to process refund");
-    } finally {
-      setRefundLoading(prev => ({ ...prev, [paymentId]: false }));
-    }
-  };
-
-  // Calculate total amount and transaction count
-  const totalAmount = payments.reduce((sum, payment) => sum + (payment.net_amount || payment.amount), 0);
-  const totalTransactions = payments.length;
 
   return (
-    <Box sx={{ 
+    <Box sx={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      pb: 4
+
     }}>
-      {/* Header */}
-      <AppBar position="static" sx={{ 
+ 
+      <AppBar position="static" sx={{
         background: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(10px)',
         boxShadow: 'none',
@@ -169,244 +180,107 @@ const HomePage = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        {/* Welcome Section */}
-        <Card sx={{ 
-          mb: 4, 
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <CardContent sx={{ textAlign: 'center', py: 4 }}>
-            <Typography variant="h3" gutterBottom sx={{ 
-              fontWeight: 'bold',
-              background: 'linear-gradient(45deg, #667eea, #764ba2)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+      <Container sx={{ mt: 4 }} >
+   
+
+        <Container sx={{ py: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between',mb:2 }}>
+            <Typography variant="h5" sx={{ mb: 3, color: '#FFFFFF' }}>
+              Product Listing
+            </Typography>
+            <Button variant="outlined"  size="small" sx={{
+              border: '1px solid white',
+              color: "White",
+              "&:hover": {
+                color: 'blue',
+                backgroundColor: "#f0f0f0",
+              },
+            }} onClick={() => {
+              navigate("/payments");
             }}>
-              Welcome Back!
-            </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-              Manage your payments with ease
-            </Typography>
-            
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<PaymentIcon />}
-              onClick={handlePayment}
-              disabled={loading}
-              sx={{
-                py: 1.5,
-                px: 4,
-                borderRadius: 2,
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #5a6fd8, #6a4190)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)'
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {loading ? "Processing..." : "Make Payment ₹5"}
+              Payments history
             </Button>
-          </CardContent>
-        </Card>
 
-        {/* Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-              color: 'white',
-              borderRadius: 3,
-              boxShadow: '0 8px 32px rgba(79, 172, 254, 0.3)'
-            }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                      Total Amount
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-                      ₹{totalAmount}
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-              color: 'white',
-              borderRadius: 3,
-              boxShadow: '0 8px 32px rgba(250, 112, 154, 0.3)'
-            }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                      Total Transactions
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-                      {totalTransactions}
-                    </Typography>
-                  </Box>
-                  <ReceiptIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
 
-        {/* Payments Table */}
-        <Card sx={{ 
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <CardContent>
-            <Typography variant="h5" gutterBottom sx={{ 
-              fontWeight: 'bold',
-              color: '#333',
-              mb: 3,
-              display: 'flex',
-              alignItems: 'center'
-            }}>
-              <ReceiptIcon sx={{ mr: 1 }} />
-              Payment History
-            </Typography>
-            
-            {paymentsLoading ? (
-              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-                <CircularProgress size={60} sx={{ color: '#667eea' }} />
-              </Box>
-            ) : payments.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <PaymentIcon sx={{ fontSize: 80, color: '#ccc', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary">
-                  No payments found
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Make your first payment to see transaction history
-                </Typography>
-              </Box>
-            ) : (
-              <TableContainer sx={{ borderRadius: 2, boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)' }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: '#f8f9ff' }}>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Order ID</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Payment ID</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Amount</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Refund Amount</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Net Amount</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Date</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold', color: '#667eea' }}>Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {payments.map((payment, index) => (
-                      <TableRow 
-                        key={payment._id}
-                        sx={{ 
-                          '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                          '&:hover': { backgroundColor: '#f0f4ff' },
-                          transition: 'background-color 0.2s ease'
-                        }}
-                      >
-                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                          {payment.order_id}
-                        </TableCell>
-                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                          {payment.payment_id}
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
-                          ₹{payment.amount}
-                        </TableCell>
-                        <TableCell sx={{ color: payment.refund_amount > 0 ? '#f57c00' : '#999' }}>
-                          ₹{payment.refund_amount || 0}
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                          ₹{payment.net_amount || payment.amount}
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                            <Chip 
-                              label={payment.status?.toUpperCase()}
-                              color={payment.status === 'paid' ? 'success' : 'warning'}
-                              size="small"
-                              sx={{ fontWeight: 'bold' }}
-                            />
-                            {payment.refund_status && (
-                              <Chip 
-                                label={`Refund: ${payment.refund_status.toUpperCase()}`}
-                                color={payment.refund_status === 'processed' ? 'success' : 
-                                       payment.refund_status === 'failed' ? 'error' : 'warning'}
-                                size="small"
-                                variant="outlined"
-                              />
-                            )}
-                          </Box>
-                        </TableCell>
-                        <TableCell sx={{ color: '#666' }}>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                              {new Date(payment.createdAt).toLocaleDateString('en-IN')}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {new Date(payment.createdAt).toLocaleTimeString('en-IN')}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          {payment.refund_status === 'processed' ? (
-                            <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
-                              Refunded
-                            </Typography>
-                          ) : payment.refund_status === 'pending' ? (
-                            <Typography variant="caption" color="warning.main" sx={{ fontWeight: 'bold' }}>
-                              Refund Pending
-                            </Typography>
-                          ) : (
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<UndoIcon />}
-                              onClick={() => handleRefund(payment.payment_id)}
-                              disabled={refundLoading[payment.payment_id]}
-                              sx={{
-                                fontSize: '0.75rem',
-                                py: 0.5,
-                                px: 1,
-                                borderColor: '#f57c00',
-                                color: '#f57c00',
-                                '&:hover': {
-                                  borderColor: '#e65100',
-                                  backgroundColor: 'rgba(245, 124, 0, 0.1)'
-                                }
-                              }}
-                            >
-                              {refundLoading[payment.payment_id] ? 'Processing...' : 'Refund'}
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </CardContent>
-        </Card>
+          </Box>
+
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
+            {products.map((product) => (
+              <Grid
+                item
+                key={product.id}
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
+                sx={{
+                  display: "flex",
+                }}
+              >
+                <Card
+                  sx={{
+                    width: '200px',        
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    image={product.image}
+                    alt={product.name}
+                    sx={{
+                      width: '185px',
+                      height: 180,        // 👈 fixed height
+                      objectFit: "contain",
+                      p: 1,
+                    }}
+                  />
+
+                  <CardContent
+                    sx={{
+                      flexGrow: 1,
+                      textAlign: "left",
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={600}
+                      noWrap
+                    >
+                      {product.name}
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      ₹{product.price}
+                    </Typography>
+                  </CardContent>
+
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{
+                      m: 2,
+                      mt: 0,
+                      width: "calc(100% - 32px)",
+                    }}
+                    loading={loading && (product.id == clickedItem)}
+                    onClick={() => { handlePayment(product.id, product?.price) }}
+                  >
+                    Buy
+                  </Button>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+
+        </Container>
+
+
       </Container>
     </Box>
   );

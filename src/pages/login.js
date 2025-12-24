@@ -85,8 +85,6 @@ const Login = () => {
           >
             Login
           </Button>
-
-          {/* 🔹 Sign Up Redirect Button */}
           <Button
             variant="outlined"
             color="secondary"
